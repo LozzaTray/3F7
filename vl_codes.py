@@ -2,61 +2,34 @@ from math import log2, ceil
 
 def shannon_fano(p):
 
-    # Begin by sorting the probabilities in decreasing order, as required
-    # in Shannon's paper.
+    # Sort probs in decreasing order and remove zeroes
     p = dict(sorted([(a,p[a]) for a in p if p[a]>0.0], key = lambda el: el[1], reverse = True))
+    f = [0] # cumulative prob
 
-    # Compute the cumulative probability distribution
-    # this can be done easily with numpy.cumsum but we will do it by hand. Note
-    # that this is not a time-critical operation so efficiency is not an issue.
-    
-    # step 1: initialise f to be a list with one element 0 (this is because Shannon
-    # requires the cumulative probability to be the sum up to AND EXCLUDING the current
-    # symbol, so the first element of f should be zero.
-    
-    # ... (whenever you see "..." you are expected to complete a missing command
+    for a in p:
+        f.append(f[-1] + p[a])
 
-    # step 2: compute the runninng sum
-    for a in p: # for every probability in p
-        # you now want to append to f the sum of its last entry (which you can access as [-1])
-        # and the probability p[a] of the current symbol
-
-        # ...
-
-    # the resulting cumulative has one too many element at the end, the sum of all probabilities
-    # that should equal to one. You can use the "pop" command to delete the last element in a list.
-
-    # ...
-
-    # We now convert the list you computed into a dictionary
-    f = dict([(a,mf) for a,mf in zip(p,f)])
+    f.pop() # remove final entry =1
+    f = dict([(a,mf) for a,mf in zip(p,f)]) # convert to dictionary f : a -> lower bound
 
     # assign the codewords
     code = {} # initialise as an empty dictionary
     for a in p: # for each probability
-
-        # Compute the codeword length according to the Shannon-Fano formula
-        # you want to use the functions "ceil()" and "log2()" we imported
-        # from the math library
-        #...
-        # (assign variable name "length")
+        length = ceil(log2(1/p[a]))
 
         codeword = [] # initialise current codeword
         myf = f[a]
-        # for each position in length, we will multiply myf by 2 and take the
-        # integral part as our binary digit
+
         for pos in range(length):
             # multiply myf by 2 (shifting it "left" in binary)
-            #...
+            myf = myf * 2
 
-            # if the resulting myf is larger than 1, append a 1 to the codeword,
-            # whereas if it is smaller than 1 you should append a 0
-            # If it is larger than 1, you sould also substratct 1 from myf.
-            #...
-            #...
-            #...
-            #...
-            #...
+            if(myf > 1): # implies > 0.5 => 1 in MSB
+                codeword.append(1)
+                myf = myf - 1
+            else:
+                codeword.append(0)
+
         code[a] = codeword # assign the codeword
         
     return code # return the code table
