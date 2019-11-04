@@ -36,59 +36,44 @@ def shannon_fano(p):
 
 
 def huffman(p):
-    # create an xtree with all the source symbols (to be the leaves) initially orphaned
+    """
+    Returns huffman code from probability dictionary
+    p = {'symbol': Pr(symbol)}
+    """
+    # xt = [[parent_index, [children_indices_array], node_label]
     xt = [[-1,[], a] for a in p]
-    # label the probabilities with a "pointer" to their corresponding nodes in the tree
-    # in the process, we convert the probability vector from a Python dictionary to a
-    # list of tuples (so we can modify it)
-    p = [(k,p[a]) for k,a in zip(range(len(p)),p)]
+    # p = [(xt_index, prob)]
+    p = [(k,p[a]) for k,a in zip(range(len(p)),p)] 
 
-    # the leaves are labeled according to the symbols in the probability vector. We will
-    # label the remaining tree nodes (mainly for visualisation purposes) with numbers
-    # starting at len(p)
+    # arbitrary intermediate node label
     nodelabel = len(p)
 
-    # this loop will gradually increase the tree and reduce the probability list.
-    # It will run until there is only one probability left in the list (which probability
-    # will by then be 1.0)
+    # run until p array is of length one
+    # each pass merges two least probable nodes
     while len(p) > 1:
-        # sort probabilities in ascending order (so [0] and [1] are smallest)
-        # using the command "sorted" and, as its second element, the expression
-        #  "key = lambda el:el[1]" (which is an inline function to retrieve the
-        # second entry from a tuple.) Note that the natural order of "sorted" is
-        # increasing, which is as you want it in this case.
-        # The output of sorted() can be written back to p (i.e. p = sorted(p, ....))
-        #...
+        # sort probabilities in ascending order >> p[0] & p[1] are least probablr
+        p = sorted(p, key = lambda el: el[1])
 
-        # Now append a new node to the tree xt with no parent (parent = -1),
-        # no children (children = []) and label str(nodelabel)
-        #...
-
-        # we incrase the variable nodelabel by 1 for its next use
+        # append new node labelled nodeLabel with no parent or children
+        xt.append([-1, [], str(nodelabel)])
         nodelabel += 1
 
-        # assign parent of the nodes pointed to by the smallest probabilities 
-        # Note that the smallest probabilities are now p[0] and p[1], so their
-        # pointers to nodes in xt are p[0][0] and p[1][0]. The corresponding
-        # xt nodes should be assigned the new node you created as a parent,
-        # whose index is len(xt)-1 since it has been appended at the end of xt
-        #...
-        #...
+        # get indices
+        parent_index = len(xt) - 1
+        left_child_index = p[0][0]
+        right_child_index = p[1][0]
+
+        # link children to parent
+        xt[left_child_index][0] = parent_index
+        xt[right_child_index][0] = parent_index
         
-        # assign the children of new node to be the nodes pointed to by
-        # p[0] and p[1]. Note that the new node can be addressed as xt[-1]
-        #...
+        # link parent to children
+        xt[parent_index][1] = [left_child_index, right_child_index]
 
-        # create a new entry pointing to the new node in the list of probabilities
-        # This new entry should be a tuple with len(xt)-1 as its first element,
-        # and the sum of the probabilities in p[0] and p[1] as its second element
-        #...
-
-        # remove the two nodes with the smallest probability
+        # add new node to p with summed prob and remove 2 children
+        p.append((parent_index, p[0][1] + p[1][1]))
         p.pop(0)
         p.pop(0)
-        # (using pop(0) twice removes the first element of the list twice
-        # and hence removes the first 2 elements.)
         
     return(xt)
 
